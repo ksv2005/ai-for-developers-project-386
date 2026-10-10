@@ -11,7 +11,7 @@ export function buildApp({ staticDir }: AppOptions = {}): FastifyInstance {
 
   app.register(
     async (api) => {
-      api.get('/healthz', async () => ({ status: 'ok' }));
+      api.get('/health', async () => ({ status: 'ok' }));
     },
     { prefix: '/api' },
   );
