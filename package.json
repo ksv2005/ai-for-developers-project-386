@@ -1,0 +1,9 @@
+{
+  "name": "ai-for-developers-project-386",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=24.21.0"
+  }
+}
