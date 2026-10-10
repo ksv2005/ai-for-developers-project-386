@@ -29,3 +29,37 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm check
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          load: true
+          tags: app:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        run: |
+          docker run -d -p 3000:3000 --name app app:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/health; then
+              echo
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Health check failed, container logs:"
+          docker logs app
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f app
