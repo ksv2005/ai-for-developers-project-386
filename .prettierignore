@@ -4,3 +4,5 @@ pnpm-lock.yaml
 .github
 CHANGELOG.md
 .release-please-manifest.json
+.agents/
+.claude/skills/

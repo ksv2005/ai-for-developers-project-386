@@ -26,3 +26,17 @@ pnpm workspace, запускать из корня (Node >= 24.21, см. `.nvmrc
 - Примеры: `feat: add booking endpoint`, `fix(api): return 404 for unknown routes`
 
 По этим сообщениям release-please генерирует версии и `CHANGELOG.md`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues и specs живут в GitHub Issues (CLI `gh`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Стандартные лейблы: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` + `docs/adr/` в корне. See `docs/agents/domain.md`.
