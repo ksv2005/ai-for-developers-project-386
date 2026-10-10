@@ -1,15 +1,15 @@
-import { cleanup, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
-import App from './App'
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import App from './App';
 
 describe('App', () => {
-  afterEach(cleanup)
+  afterEach(cleanup);
 
   it('renders the page heading', () => {
-    render(<App />)
+    render(<App />);
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Календарь звонков' }),
-    ).toBeTruthy()
-  })
-})
+    ).toBeTruthy();
+  });
+});
