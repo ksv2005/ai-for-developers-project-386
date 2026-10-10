@@ -10,3 +10,16 @@ try {
   app.log.error(err);
   process.exit(1);
 }
+
+for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+  process.once(signal, () => {
+    app.log.info({ signal }, 'shutting down');
+    app.close().then(
+      () => process.exit(0),
+      (err: unknown) => {
+        app.log.error(err);
+        process.exit(1);
+      },
+    );
+  });
+}
