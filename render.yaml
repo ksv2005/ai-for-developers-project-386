@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: call-booking
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: OWNER_TZ
+        value: Europe/Moscow
+      - key: OWNER_NAME
+        value: Владелец
