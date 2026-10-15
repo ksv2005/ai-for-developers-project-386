@@ -1,20 +1,25 @@
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
 import path from 'node:path';
+import { createInMemoryRepository, type Repository } from './repository.js';
+import { routes } from './routes.js';
 
 export interface AppOptions {
   staticDir?: string;
+  ownerTz?: string;
+  now?: () => Date;
+  repository?: Repository;
 }
 
-export function buildApp({ staticDir }: AppOptions = {}): FastifyInstance {
+export function buildApp({
+  staticDir,
+  ownerTz = 'Europe/Moscow',
+  now = () => new Date(),
+  repository = createInMemoryRepository(),
+}: AppOptions = {}): FastifyInstance {
   const app = Fastify({ logger: true });
 
-  app.register(
-    async (api) => {
-      api.get('/health', async () => ({ status: 'ok' }));
-    },
-    { prefix: '/api' },
-  );
+  app.register(routes, { prefix: '/api', repository, ownerTz, now });
 
   if (staticDir) {
     app.register(fastifyStatic, {
