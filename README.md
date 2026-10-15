@@ -99,6 +99,7 @@ docker run --rm -e PORT=10000 -p 10000:10000 ai-for-developers-project-386:local
 
 1. В Render: **New → Blueprint**, выберите этот репозиторий.
 2. Проверьте переменные `OWNER_TZ` и `OWNER_NAME` (значения по умолчанию заданы в `render.yaml`).
+
 `PORT` не задаётся: Render передаёт его сам, сервер читает его из окружения.
 
 ## Ограничения
