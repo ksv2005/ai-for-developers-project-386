@@ -3,13 +3,22 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
-import { consultation, introCall, owner } from './test/fixtures';
+import { buildSlots, consultation, introCall, owner } from './test/fixtures';
 
 type Routes = Record<string, () => Response | Promise<Response>>;
 
 const catalogRoutes: Routes = {
   '/api/owner': () => Response.json(owner),
   '/api/event-types': () => Response.json([introCall, consultation]),
+  '/api/event-types/intro/slots': () =>
+    Response.json(
+      buildSlots({
+        from: '2026-10-15',
+        days: 14,
+        durationMinutes: 15,
+        utcOffsetHours: 3,
+      }),
+    ),
 };
 
 function renderApp(path = '/', routes: Routes = catalogRoutes) {
@@ -150,7 +159,7 @@ describe('App', () => {
       );
 
       expect(
-        screen.getByRole('heading', { level: 1, name: 'Выбор времени' }),
+        await screen.findByRole('heading', { level: 1, name: 'Выбор времени' }),
       ).toBeTruthy();
     });
 
