@@ -11,6 +11,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "generate": "pnpm --filter contract build && pnpm --filter api-client generate && prettier --write packages/contract/openapi.yaml",
+    "generate:check": "pnpm generate && git diff --exit-code -- packages/contract/openapi.yaml packages/api-client/src/schema.d.ts",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",

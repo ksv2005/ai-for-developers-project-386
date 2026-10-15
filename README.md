@@ -27,6 +27,14 @@ cd ai-for-developers-project-386
 - Данные хранятся в памяти и теряются при перезапуске ([ADR-0001](docs/adr/0001-in-memory-storage.md)).
 - Авторизации нет по ТЗ: админские эндпоинты (`/api/event-types` для записи, `/api/admin/bookings`) доступны любому, кто знает URL.
 
+## Генерация из контракта
+
+Источник правды об API — TypeSpec-контракт `packages/contract/main.tsp`. Цепочка: TypeSpec → `packages/contract/openapi.yaml` → `packages/api-client/src/schema.d.ts` (типы SDK). Сервер читает `openapi.yaml` в рантайме (fastify-openapi-glue), отдельных серверных файлов нет.
+
+- `pnpm generate` — пересобирает все артефакты одной командой; после правки `main.tsp` запускайте её и коммитьте результат.
+- `pnpm generate:check` — `generate` + `git diff --exit-code` по сгенерированным файлам; запускается в CI перед `pnpm check` и падает, если артефакты устарели.
+- Сгенерированные файлы коммитятся; в Docker-сборке `pnpm generate` не запускается.
+
 ## Использование
 
 <!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
