@@ -199,7 +199,9 @@ function SlotPicker({ owner, eventType, slots, now }: SlotPickerProps) {
             {weeks.flat().map((date, index) => {
               const day = Number(date.slice(8));
               const monthMark =
-                index === 0 || day === 1 ? ` ${formatMonthShort(date)}` : '';
+                index === 0 || day === 1 ? (
+                  <span className="month-mark"> {formatMonthShort(date)}</span>
+                ) : null;
               if (!inHorizon(date)) {
                 return (
                   <button
