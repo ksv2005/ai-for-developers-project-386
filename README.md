@@ -20,6 +20,12 @@ git clone https://github.com/ksv2005/ai-for-developers-project-386.git
 cd ai-for-developers-project-386
 ```
 
+## Конфигурация
+
+- `OWNER_TZ` — часовой пояс Владельца (IANA), по умолчанию `Europe/Moscow`; в нём считаются Рабочее окно (09:00–18:00) и даты.
+- Данные хранятся в памяти и теряются при перезапуске ([ADR-0001](docs/adr/0001-in-memory-storage.md)).
+- Авторизации нет по ТЗ: админские эндпоинты (`/api/event-types` для записи, `/api/admin/bookings`) доступны любому, кто знает URL.
+
 ## Использование
 
 <!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
