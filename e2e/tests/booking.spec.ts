@@ -104,6 +104,7 @@ test('гость бронирует звонок, встреча видна в �
   await expect(
     page.getByRole('heading', { name: 'Бронирование подтверждено' }),
   ).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/book/${id}/done$`));
   await expect(page.getByRole('heading', { name: title })).toBeVisible();
   await expect(page.getByText('30 мин')).toBeVisible();
   await expect(page.getByText(guestName)).toBeVisible();

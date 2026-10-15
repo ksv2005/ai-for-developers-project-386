@@ -1,6 +1,6 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import {
@@ -25,6 +25,11 @@ const slots = (isBusy?: (date: string, hhmm: string) => boolean) =>
 
 type Handler = (request: Request) => Response | Promise<Response>;
 
+function LocationProbe() {
+  const { pathname } = useLocation();
+  return <output data-testid="pathname">{pathname}</output>;
+}
+
 function renderApp(path: string, overrides: Record<string, Handler> = {}) {
   const routes: Record<string, Handler> = {
     '/api/owner': () => Response.json(owner),
@@ -40,6 +45,7 @@ function renderApp(path: string, overrides: Record<string, Handler> = {}) {
   render(
     <MemoryRouter initialEntries={[path]}>
       <App />
+      <LocationProbe />
     </MemoryRouter>,
   );
   return fetchMock;
@@ -100,6 +106,9 @@ describe('booking form', () => {
     expect(
       await screen.findByRole('heading', { name: 'Бронирование подтверждено' }),
     ).toBeTruthy();
+    expect(screen.getByTestId('pathname').textContent).toBe(
+      '/book/consultation/done',
+    );
     for (const text of [
       'Консультация',
       '60 мин',
@@ -128,6 +137,22 @@ describe('booking form', () => {
     expect(
       await screen.findByRole('heading', { name: 'Записаться' }),
     ).toBeTruthy();
+  });
+
+  it('shows a stub with a catalog link on /done without state', async () => {
+    renderApp('/book/consultation/done');
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Бронирование уже оформлено',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'К каталогу' }).getAttribute('href'),
+    ).toBe('/book');
+    expect(
+      screen.queryByRole('heading', { name: 'Бронирование подтверждено' }),
+    ).toBeNull();
   });
 
   it('returns to the picker on 409 with reloaded slots and the same date', async () => {
