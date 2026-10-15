@@ -60,3 +60,18 @@ export function buildSlots({
   }
   return slots;
 }
+
+type Booking = components['schemas']['Booking'];
+
+/** Бронирование «Консультации» на 15.10.2026 10:00 МСК, как его отдаёт API. */
+export const consultationBooking: Booking = {
+  id: 'booking-1',
+  eventTypeId: 'consultation',
+  eventTitle: 'Консультация',
+  durationMinutes: 60,
+  start: '2026-10-15T07:00:00.000Z',
+  end: '2026-10-15T08:00:00.000Z',
+  guestName: 'Анна Гость',
+  guestEmail: 'anna@example.com',
+  note: 'Хочу обсудить проект',
+};

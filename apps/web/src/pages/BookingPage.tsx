@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router';
 import type { components } from 'api-client';
 import { api } from '../api';
 import {
@@ -120,7 +126,12 @@ interface SlotPickerProps {
 
 function SlotPicker({ owner, eventType, slots, now }: SlotPickerProps) {
   const navigate = useNavigate();
-  const [pickedDate, setPickedDate] = useState<string | null>(null);
+  const location = useLocation();
+  const [params] = useSearchParams();
+  const notice = (location.state as { notice?: string } | null)?.notice;
+  const [pickedDate, setPickedDate] = useState<string | null>(
+    params.get('date'),
+  );
   const [pickedStart, setPickedStart] = useState<string | null>(null);
 
   const tz = owner.timeZone;
@@ -143,7 +154,9 @@ function SlotPicker({ owner, eventType, slots, now }: SlotPickerProps) {
     addDays(today, i),
   );
   const selectedDate =
-    pickedDate ?? horizonDates.find((d) => freeCount(d) > 0) ?? null;
+    pickedDate !== null && inHorizon(pickedDate) && freeCount(pickedDate) > 0
+      ? pickedDate
+      : (horizonDates.find((d) => freeCount(d) > 0) ?? null);
   const daySlots = selectedDate ? (slotsByDate.get(selectedDate) ?? []) : [];
   const selectedSlot =
     daySlots.find((s) => s.start === pickedStart && s.status === 'free') ??
@@ -154,6 +167,11 @@ function SlotPicker({ owner, eventType, slots, now }: SlotPickerProps) {
   return (
     <section>
       <h1>Выбор времени</h1>
+      {notice && (
+        <p role="alert" className="card notice">
+          {notice}
+        </p>
+      )}
       <div className="picker">
         <aside className="card summary" aria-label="Сводка">
           <h2>{eventType.title}</h2>
