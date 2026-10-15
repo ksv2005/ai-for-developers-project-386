@@ -7,7 +7,11 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['**/dist', '**/coverage']),
+  globalIgnores([
+    '**/dist',
+    '**/coverage',
+    'packages/api-client/src/schema.d.ts',
+  ]),
   {
     files: ['**/*.{js,ts,tsx}'],
     extends: [js.configs.recommended, tseslint.configs.recommended],
@@ -17,6 +21,20 @@ export default defineConfig([
     files: ['apps/web/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
     languageOptions: { globals: globals.browser },
+  },
+  {
+    // The web client talks to the API only through the generated SDK.
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', 'apps/web/src/test/**'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'fetch',
+          message: 'Use the api-client SDK instead of calling fetch directly.',
+        },
+      ],
+    },
   },
   eslintConfigPrettier,
 ]);
