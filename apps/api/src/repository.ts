@@ -25,7 +25,8 @@ export type BookingInput = Omit<Booking, 'id'>;
 export interface Repository {
   listEventTypes(): EventType[];
   getEventType(id: string): EventType | undefined;
-  createEventType(input: EventTypeInput): EventType;
+  /** Stores the event type under its owner-chosen id; returns undefined if the id is taken. */
+  createEventType(eventType: EventType): EventType | undefined;
   updateEventType(id: string, input: EventTypeInput): EventType | undefined;
   deleteEventType(id: string): boolean;
   listBookings(): Booking[];
@@ -40,8 +41,8 @@ export function createInMemoryRepository(): Repository {
   return {
     listEventTypes: () => [...eventTypes.values()],
     getEventType: (id) => eventTypes.get(id),
-    createEventType(input) {
-      const eventType = { id: randomUUID(), ...input };
+    createEventType(eventType) {
+      if (eventTypes.has(eventType.id)) return undefined;
       eventTypes.set(eventType.id, eventType);
       return eventType;
     },

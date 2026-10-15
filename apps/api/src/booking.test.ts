@@ -15,11 +15,18 @@ describe('booking API', () => {
     await app.close();
   });
 
+  let nextId = 0;
+
   async function createType(body: object = {}) {
     const response = await app.inject({
       method: 'POST',
       url: '/api/event-types',
-      payload: { title: 'Intro', durationMinutes: 30, ...body },
+      payload: {
+        id: `type-${++nextId}`,
+        title: 'Intro',
+        durationMinutes: 30,
+        ...body,
+      },
     });
     return response.json<{ id: string }>();
   }
@@ -35,10 +42,16 @@ describe('booking API', () => {
       const created = await app.inject({
         method: 'POST',
         url: '/api/event-types',
-        payload: { title: 'Intro', description: 'Hi', durationMinutes: 15 },
+        payload: {
+          id: 'intro',
+          title: 'Intro',
+          description: 'Hi',
+          durationMinutes: 15,
+        },
       });
       expect(created.statusCode).toBe(201);
       const { id } = created.json<{ id: string }>();
+      expect(id).toBe('intro');
 
       const updated = await app.inject({
         method: 'PUT',
@@ -63,12 +76,17 @@ describe('booking API', () => {
     });
 
     it.each([
-      { title: '', durationMinutes: 30 },
-      { title: 'x'.repeat(101), durationMinutes: 30 },
-      { title: 'Intro', durationMinutes: 4 },
-      { title: 'Intro', durationMinutes: 541 },
-      { title: 'Intro', durationMinutes: 1.5 },
-      { durationMinutes: 30 },
+      { id: 'a', title: '', durationMinutes: 30 },
+      { id: 'a', title: 'x'.repeat(101), durationMinutes: 30 },
+      { id: 'a', title: 'Intro', durationMinutes: 4 },
+      { id: 'a', title: 'Intro', durationMinutes: 541 },
+      { id: 'a', title: 'Intro', durationMinutes: 1.5 },
+      { id: 'a', durationMinutes: 30 },
+      { title: 'Intro', durationMinutes: 30 },
+      { id: '', title: 'Intro', durationMinutes: 30 },
+      { id: 'Intro', title: 'Intro', durationMinutes: 30 },
+      { id: 'a b', title: 'Intro', durationMinutes: 30 },
+      { id: 'a'.repeat(51), title: 'Intro', durationMinutes: 30 },
     ])('rejects invalid event type %j with 400', async (payload) => {
       const response = await app.inject({
         method: 'POST',
@@ -78,6 +96,38 @@ describe('booking API', () => {
       expect(response.statusCode).toBe(400);
     });
 
+    it('rejects an already taken event type id with 409', async () => {
+      await createType({ id: 'intro' });
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/event-types',
+        payload: { id: 'intro', title: 'Other', durationMinutes: 15 },
+      });
+      expect(response.statusCode).toBe(409);
+      expect(
+        (await app.inject({ method: 'GET', url: '/api/event-types' })).json(),
+      ).toHaveLength(1);
+    });
+
+    it('does not change the id on update', async () => {
+      await createType({ id: 'intro' });
+      const response = await app.inject({
+        method: 'PUT',
+        url: '/api/event-types/intro',
+        payload: { id: 'other', title: 'x', durationMinutes: 30 },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({ id: 'intro', title: 'x' });
+      expect(
+        (
+          await app.inject({
+            method: 'GET',
+            url: '/api/event-types/other/slots',
+          })
+        ).statusCode,
+      ).toBe(404);
+    });
+
     it('returns 404 when updating an unknown event type', async () => {
       const response = await app.inject({
         method: 'PUT',
@@ -85,6 +135,28 @@ describe('booking API', () => {
         payload: { title: 'x', durationMinutes: 30 },
       });
       expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('GET /api/owner', () => {
+    it('returns the owner profile', async () => {
+      const response = await app.inject({ method: 'GET', url: '/api/owner' });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({ name: 'Владелец', timeZone: 'UTC' });
+    });
+
+    it('uses the configured name and time zone', async () => {
+      const custom = buildApp({
+        ownerName: 'Ann',
+        ownerTz: 'Asia/Tokyo',
+        now: () => NOW,
+      });
+      const response = await custom.inject({
+        method: 'GET',
+        url: '/api/owner',
+      });
+      await custom.close();
+      expect(response.json()).toEqual({ name: 'Ann', timeZone: 'Asia/Tokyo' });
     });
   });
 

@@ -3,6 +3,7 @@ export interface Config {
   host: string;
   staticDir?: string;
   ownerTz: string;
+  ownerName?: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -15,5 +16,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     host: env.HOST ?? '0.0.0.0',
     staticDir: env.STATIC_DIR || undefined,
     ownerTz,
+    ownerName: env.OWNER_NAME || undefined,
   };
 }
