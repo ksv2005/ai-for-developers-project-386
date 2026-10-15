@@ -1,4 +1,6 @@
 dist
+test-results
+playwright-report
 coverage
 pnpm-lock.yaml
 .github

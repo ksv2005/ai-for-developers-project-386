@@ -8,6 +8,7 @@ pnpm workspace, запускать из корня (Node >= 24.21, см. `.nvmrc
 
 - `pnpm dev` — API (порт 3000) и web (Vite) параллельно; Vite проксирует `/api` на API
 - `pnpm check` — все проверки CI: format → lint → typecheck → test → build
+- `pnpm test:e2e` — Playwright (`e2e/`) против собранного приложения (`pnpm build` + API со `STATIC_DIR`); не входит в `pnpm check`. Нужен `pnpm --filter e2e exec playwright install chromium`; с `E2E_BASE_URL` бьёт по уже запущенному приложению (так в CI — Docker-образ)
 - Один тест: `pnpm vitest run apps/api/src/app.test.ts` (`-t "название"` — фильтр по имени)
 
 ## Архитектура
