@@ -1,0 +1,429 @@
+openapi: 3.0.0
+info:
+  title: Календарь звонков API
+  version: 0.0.0
+tags:
+  - name: service
+  - name: owner
+  - name: event-types
+  - name: bookings
+  - name: admin
+paths:
+  /api/admin/bookings:
+    get:
+      operationId: AdminBookings_list
+      description: Предстоящие Бронирования по возрастанию начала.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+      tags:
+        - admin
+  /api/bookings:
+    post:
+      operationId: Bookings_create
+      description: Забронировать Слот.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      tags:
+        - bookings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+  /api/event-types:
+    get:
+      operationId: EventTypes_list
+      description: Список Типов событий.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+      tags:
+        - event-types
+    post:
+      operationId: EventTypes_create
+      description: Создать Тип события; id задаёт Владелец.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventType'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      tags:
+        - event-types
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventTypeCreate'
+  /api/event-types/{id}:
+    put:
+      operationId: EventTypes_update
+      description: Изменить Тип события (id не меняется).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EventTypeId'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventType'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      tags:
+        - event-types
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventTypeUpdate'
+    delete:
+      operationId: EventTypes_delete
+      description: Удалить Тип события; существующие Бронирования не затрагиваются.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EventTypeId'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      tags:
+        - event-types
+  /api/event-types/{id}/slots:
+    get:
+      operationId: EventTypes_slots
+      description: Слоты Типа события на весь Горизонт бронирования (плоский массив).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EventTypeId'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slot'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      tags:
+        - event-types
+  /api/health:
+    get:
+      operationId: Api_health
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+      tags:
+        - service
+  /api/owner:
+    get:
+      operationId: Api_getOwner
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Owner'
+      tags:
+        - owner
+components:
+  schemas:
+    ApiError:
+      type: object
+      required:
+        - statusCode
+        - error
+        - message
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+          description: Код ошибки валидации схемы (только для 400).
+      description: Единый формат ошибки.
+    Booking:
+      type: object
+      required:
+        - id
+        - eventTypeId
+        - eventTitle
+        - durationMinutes
+        - start
+        - end
+        - guestName
+        - guestEmail
+        - note
+      properties:
+        id:
+          type: string
+        eventTypeId:
+          $ref: '#/components/schemas/EventTypeId'
+        eventTitle:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        guestName:
+          type: string
+        guestEmail:
+          type: string
+        note:
+          type: string
+      description: Подтверждённое Бронирование со снимком Типа события.
+    BookingCreate:
+      type: object
+      required:
+        - eventTypeId
+        - start
+        - guestName
+        - guestEmail
+      properties:
+        eventTypeId:
+          $ref: '#/components/schemas/EventTypeId'
+        start:
+          type: string
+          format: date-time
+          description: Начало Слота.
+        guestName:
+          type: string
+          minLength: 1
+        guestEmail:
+          type: string
+          format: email
+        note:
+          type: string
+          default: ''
+      description: Создание Бронирования.
+    EventType:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - durationMinutes
+      properties:
+        id:
+          $ref: '#/components/schemas/EventTypeId'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+          minimum: 5
+          maximum: 540
+          description: Длительность в минутах.
+      description: Вид звонка.
+    EventTypeCreate:
+      type: object
+      required:
+        - id
+        - title
+        - durationMinutes
+      properties:
+        id:
+          $ref: '#/components/schemas/EventTypeId'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          default: ''
+        durationMinutes:
+          type: integer
+          format: int32
+          minimum: 5
+          maximum: 540
+      description: 'Создание Типа события: id задаёт Владелец.'
+    EventTypeId:
+      type: string
+      minLength: 1
+      maxLength: 50
+      pattern: ^[a-z0-9-]{1,50}$
+      description: 'Идентификатор Типа события: задаёт Владелец, уникален, виден Гостю в адресе, не меняется.'
+    EventTypeUpdate:
+      type: object
+      required:
+        - title
+        - durationMinutes
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          default: ''
+        durationMinutes:
+          type: integer
+          format: int32
+          minimum: 5
+          maximum: 540
+      description: 'Изменение Типа события: id не меняется и в теле не принимается.'
+    Health:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+    Owner:
+      type: object
+      required:
+        - name
+        - timeZone
+      properties:
+        name:
+          type: string
+          description: Имя Владельца.
+        timeZone:
+          type: string
+          description: IANA-имя часового пояса Владельца, например Europe/Moscow.
+      description: 'Профиль Владельца: имя и часовой пояс, в котором показывается всё время.'
+    Slot:
+      type: object
+      required:
+        - date
+        - start
+        - end
+        - status
+      properties:
+        date:
+          type: string
+          format: date
+          description: Календарная дата в часовом поясе Владельца (YYYY-MM-DD).
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/SlotStatus'
+      description: Интервал в Рабочем окне; свободный или занятый.
+    SlotStatus:
+      type: string
+      enum:
+        - free
+        - busy
+servers:
+  - url: /
+    description: Same origin
+    variables: {}
