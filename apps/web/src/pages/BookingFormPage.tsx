@@ -1,5 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router';
 import type { components } from 'api-client';
 import { api } from '../api';
 import { fieldOf } from '../lib/fieldErrors';
@@ -127,7 +133,6 @@ function BookingForm({ owner, eventType, start }: BookingFormProps) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [booking, setBooking] = useState<Booking | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   const tz = owner.timeZone;
@@ -137,10 +142,6 @@ function BookingForm({ owner, eventType, start }: BookingFormProps) {
   const backToPicker = `/book/${eventType.id}?date=${date}`;
 
   if (notFound) return <EventTypeNotFound />;
-
-  if (booking !== null) {
-    return <Confirmation booking={booking} owner={owner} />;
-  }
 
   const returnToPicker = (notice: string) =>
     navigate(backToPicker, { state: { notice } });
@@ -162,7 +163,10 @@ function BookingForm({ owner, eventType, start }: BookingFormProps) {
       });
       const { data, error, response } = result;
       if (data !== undefined) {
-        setBooking(data);
+        void navigate(`/book/${eventType.id}/done`, {
+          replace: true,
+          state: { booking: data },
+        });
       } else if (response.status === 400) {
         const field = fieldOf(error?.message ?? '', FIELDS);
         if (field) setErrors({ [field]: FIELD_MESSAGES[field] });
@@ -253,6 +257,56 @@ function BookingForm({ owner, eventType, start }: BookingFormProps) {
       </form>
     </section>
   );
+}
+
+export function BookingDonePage() {
+  const { id = '' } = useParams();
+  return <BookingDoneLoader key={id} />;
+}
+
+function BookingDoneLoader() {
+  const location = useLocation();
+  const booking = (location.state as { booking?: Booking } | null)?.booking;
+  const [owner, setOwner] = useState<Owner | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api
+      .GET('/api/owner')
+      .then(({ data }) => {
+        if (!active) return;
+        if (data === undefined) setFailed(true);
+        else setOwner(data);
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (booking === undefined) {
+    return (
+      <section className="card">
+        <h1>Бронирование уже оформлено</h1>
+        <p>Подтверждение доступно только сразу после оформления.</p>
+        <Link to="/book" className="button">
+          К каталогу
+        </Link>
+      </section>
+    );
+  }
+  if (failed) {
+    return (
+      <p role="alert" className="card">
+        Не удалось загрузить данные. Попробуйте обновить страницу.
+      </p>
+    );
+  }
+  if (owner === null) return <p role="status">Загрузка…</p>;
+  return <Confirmation booking={booking} owner={owner} />;
 }
 
 function Confirmation({ booking, owner }: { booking: Booking; owner: Owner }) {

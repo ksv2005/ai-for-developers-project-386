@@ -1,6 +1,6 @@
 import { NavLink, Route, Routes } from 'react-router';
 import AdminPage from './pages/AdminPage';
-import BookingFormPage from './pages/BookingFormPage';
+import BookingFormPage, { BookingDonePage } from './pages/BookingFormPage';
 import BookingPage from './pages/BookingPage';
 import CatalogPage from './pages/CatalogPage';
 
@@ -65,6 +65,7 @@ function App() {
           <Route path="/book" element={<CatalogPage />} />
           <Route path="/book/:id" element={<BookingPage />} />
           <Route path="/book/:id/form" element={<BookingFormPage />} />
+          <Route path="/book/:id/done" element={<BookingDonePage />} />
           <Route path="/admin/*" element={<AdminPage />} />
           <Route
             path="*"
