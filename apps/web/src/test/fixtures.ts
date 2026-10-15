@@ -75,3 +75,29 @@ export const consultationBooking: Booking = {
   guestEmail: 'anna@example.com',
   note: 'Хочу обсудить проект',
 };
+
+/** Бронирование «Знакомства» на 16.10.2026 11:30 МСК, без заметки. */
+export const introBooking: Booking = {
+  id: 'booking-2',
+  eventTypeId: 'intro',
+  eventTitle: 'Знакомство',
+  durationMinutes: 15,
+  start: '2026-10-16T08:30:00.000Z',
+  end: '2026-10-16T08:45:00.000Z',
+  guestName: 'Борис Гость',
+  guestEmail: 'boris@example.com',
+  note: '',
+};
+
+/** Бронирование Типа, которого больше нет: показывается по снимку. */
+export const deletedTypeBooking: Booking = {
+  id: 'booking-3',
+  eventTypeId: 'workshop',
+  eventTitle: 'Воркшоп (удалён)',
+  durationMinutes: 90,
+  start: '2026-10-17T12:00:00.000Z',
+  end: '2026-10-17T13:30:00.000Z',
+  guestName: 'Вера Гость',
+  guestEmail: 'vera@example.com',
+  note: 'Приду с командой',
+};

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { components } from 'api-client';
 import { api } from '../api';
+import BookingsSection from '../admin/BookingsSection';
 import EventTypesSection from '../admin/EventTypesSection';
 
 type Owner = components['schemas']['Owner'];
@@ -10,7 +11,7 @@ type OwnerState =
   | { status: 'error' }
   | { status: 'ready'; owner: Owner };
 
-/** Страница Владельца; секции независимы — в #16 рядом добавится список Бронирований. */
+/** Страница Владельца; секции независимы. */
 export default function AdminPage() {
   const [state, setState] = useState<OwnerState>({ status: 'loading' });
 
@@ -46,6 +47,7 @@ export default function AdminPage() {
         )}
       </header>
       <EventTypesSection />
+      <BookingsSection />
     </div>
   );
 }

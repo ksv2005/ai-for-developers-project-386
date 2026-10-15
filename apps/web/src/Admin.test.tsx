@@ -21,6 +21,7 @@ function renderAdmin(
   const routes: Record<string, Handler> = {
     'GET /api/owner': () => Response.json(owner),
     'GET /api/event-types': () => Response.json(items),
+    'GET /api/admin/bookings': () => Response.json([]),
     'POST /api/event-types': async (request) => {
       const body = (await request.json()) as EventType;
       items = [...items, body];
