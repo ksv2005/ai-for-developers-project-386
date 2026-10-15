@@ -1,4 +1,5 @@
 import { NavLink, Route, Routes } from 'react-router';
+import CatalogPage from './pages/CatalogPage';
 
 function Header() {
   return (
@@ -58,7 +59,11 @@ function App() {
       <main className="page">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/book/*" element={<Placeholder title="Записаться" />} />
+          <Route path="/book" element={<CatalogPage />} />
+          <Route
+            path="/book/:id"
+            element={<Placeholder title="Выбор времени" />}
+          />
           <Route path="/admin/*" element={<Placeholder title="Админка" />} />
           <Route
             path="*"

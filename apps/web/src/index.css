@@ -127,3 +127,57 @@ a {
     font-size: 2.25rem;
   }
 }
+
+.owner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.owner-name {
+  font-weight: 600;
+}
+
+.owner-role {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.event-card {
+  display: block;
+  height: 100%;
+}
+
+.event-card:hover {
+  border-color: var(--accent);
+}
+
+.event-card h2 {
+  margin: 0 0 8px;
+}
+
+.event-card p {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
