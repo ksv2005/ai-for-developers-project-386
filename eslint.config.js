@@ -10,6 +10,8 @@ export default defineConfig([
   globalIgnores([
     '**/dist',
     '**/coverage',
+    '**/test-results',
+    '**/playwright-report',
     'packages/api-client/src/schema.d.ts',
   ]),
   {
