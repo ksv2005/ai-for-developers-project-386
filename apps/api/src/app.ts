@@ -1,12 +1,19 @@
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
+import openapiGlue from 'fastify-openapi-glue';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { createInMemoryRepository, type Repository } from './repository.js';
-import { routes } from './routes.js';
+import { Service } from './service.js';
+
+const specification = createRequire(import.meta.url).resolve(
+  'contract/openapi.yaml',
+);
 
 export interface AppOptions {
   staticDir?: string;
   ownerTz?: string;
+  ownerName?: string;
   now?: () => Date;
   repository?: Repository;
 }
@@ -14,12 +21,21 @@ export interface AppOptions {
 export function buildApp({
   staticDir,
   ownerTz = 'Europe/Moscow',
+  ownerName = 'Владелец',
   now = () => new Date(),
   repository = createInMemoryRepository(),
 }: AppOptions = {}): FastifyInstance {
   const app = Fastify({ logger: true });
 
-  app.register(routes, { prefix: '/api', repository, ownerTz, now });
+  // Routes and request validation come from the contract; paths already carry /api.
+  app.register(openapiGlue, {
+    specification,
+    serviceHandlers: new Service({
+      repository,
+      owner: { name: ownerName, timeZone: ownerTz },
+      now,
+    }),
+  });
 
   if (staticDir) {
     app.register(fastifyStatic, {

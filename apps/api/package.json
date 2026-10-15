@@ -15,12 +15,15 @@
   },
   "dependencies": {
     "@fastify/static": "^10.1.6",
-    "fastify": "^5.12.5"
+    "fastify": "^5.12.5",
+    "fastify-openapi-glue": "4.11.5",
+    "contract": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "api-client": "workspace:*"
   }
 }
