@@ -221,7 +221,7 @@ describe('slot picker', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Продолжить' }));
 
     expect(
-      screen.getByRole('heading', { name: 'Форма бронирования' }),
+      await screen.findByRole('heading', { name: 'Ваши данные' }),
     ).toBeTruthy();
     expect(screen.getByTestId('location').textContent).toBe(
       '/book/consultation/form?start=2026-10-15T07%3A00%3A00.000Z',
