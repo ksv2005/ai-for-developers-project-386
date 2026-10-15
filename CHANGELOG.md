@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/ksv2005/ai-for-developers-project-386/compare/ai-for-developers-project-386-v1.0.0...ai-for-developers-project-386-v1.1.0) (2026-10-15)
+
+
+### Features
+
+* **api:** add event types, slots and bookings ([#6](https://github.com/ksv2005/ai-for-developers-project-386/issues/6)) ([339fbe7](https://github.com/ksv2005/ai-for-developers-project-386/commit/339fbe73e2fe3860d2002f906beae2f849d1221a))
+
 ## 1.0.0 (2026-10-10)
 
 
