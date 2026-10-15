@@ -1,30 +1,72 @@
-import { createApiClient } from 'api-client';
-import { useEffect, useState } from 'react';
+import { NavLink, Route, Routes } from 'react-router';
 
-const api = createApiClient();
+function Header() {
+  return (
+    <header className="header">
+      <NavLink to="/" className="brand">
+        Календарь звонков
+      </NavLink>
+      <nav className="nav" aria-label="Основная навигация">
+        <NavLink to="/book">Записаться</NavLink>
+        <NavLink to="/admin">Админка</NavLink>
+      </nav>
+    </header>
+  );
+}
 
-type Status = 'loading' | 'ok' | 'unavailable';
+function HomePage() {
+  return (
+    <section className="hero">
+      <div className="hero-text">
+        <span className="badge">БЫСТРАЯ ЗАПИСЬ НА ЗВОНОК</span>
+        <h1>Calendar</h1>
+        <p>
+          Забронируйте встречу за минуту: выберите тип события и удобное время.
+        </p>
+        <NavLink to="/book" className="button">
+          Записаться →
+        </NavLink>
+      </div>
+      <aside className="card">
+        <h2>Возможности</h2>
+        <ul>
+          <li>Выбор типа события и удобного времени для встречи.</li>
+          <li>
+            Быстрое бронирование с подтверждением и дополнительными заметками.
+          </li>
+          <li>
+            Управление типами встреч и просмотр предстоящих записей в админке.
+          </li>
+        </ul>
+      </aside>
+    </section>
+  );
+}
+
+function Placeholder({ title }: { title: string }) {
+  return (
+    <section className="card">
+      <h1>{title}</h1>
+    </section>
+  );
+}
 
 function App() {
-  const [status, setStatus] = useState<Status>('loading');
-
-  useEffect(() => {
-    let active = true;
-    api
-      .GET('/api/health')
-      .then(({ data }) => active && setStatus(data ? 'ok' : 'unavailable'))
-      .catch(() => active && setStatus('unavailable'));
-    return () => {
-      active = false;
-    };
-  }, []);
-
   return (
-    <main>
-      <h1>Календарь звонков</h1>
-      {status === 'ok' && <p>API: ok</p>}
-      {status === 'unavailable' && <p>API недоступен</p>}
-    </main>
+    <>
+      <Header />
+      <main className="page">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/book/*" element={<Placeholder title="Записаться" />} />
+          <Route path="/admin/*" element={<Placeholder title="Админка" />} />
+          <Route
+            path="*"
+            element={<Placeholder title="Страница не найдена" />}
+          />
+        </Routes>
+      </main>
+    </>
   );
 }
 
