@@ -3,9 +3,20 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
+import { consultation, introCall, owner } from './test/fixtures';
 
-function renderApp(path = '/') {
-  const fetchMock = vi.fn(async () => Response.json({}));
+type Routes = Record<string, () => Response | Promise<Response>>;
+
+const catalogRoutes: Routes = {
+  '/api/owner': () => Response.json(owner),
+  '/api/event-types': () => Response.json([introCall, consultation]),
+};
+
+function renderApp(path = '/', routes: Routes = catalogRoutes) {
+  const fetchMock = vi.fn(async (request: Request) => {
+    const handler = routes[new URL(request.url).pathname];
+    return handler ? handler() : new Response(null, { status: 404 });
+  });
   vi.stubGlobal('fetch', fetchMock);
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -62,7 +73,7 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Записаться →' }));
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Записаться' }),
+      await screen.findByRole('heading', { level: 1, name: 'Записаться' }),
     ).toBeTruthy();
   });
 
@@ -83,7 +94,7 @@ describe('App', () => {
       within(nav()).getByRole('link', { name: 'Записаться' }),
     );
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Записаться' }),
+      await screen.findByRole('heading', { level: 1, name: 'Записаться' }),
     ).toBeTruthy();
     expect(within(nav()).getByRole('link', { name: 'Админка' })).toBeTruthy();
   });
@@ -103,5 +114,93 @@ describe('App', () => {
     const fetchMock = renderApp();
 
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  describe('catalog', () => {
+    it('shows a loading state until the data arrives', async () => {
+      renderApp('/book');
+
+      expect(screen.getByRole('status').textContent).toBe('Загрузка…');
+      expect(await screen.findByText('Знакомство')).toBeTruthy();
+      expect(screen.queryByRole('status')).toBeNull();
+    });
+
+    it('shows the owner profile above the event type cards', async () => {
+      renderApp('/book');
+
+      expect(await screen.findByText('Tota Rey')).toBeTruthy();
+      expect(screen.getByText('TR')).toBeTruthy();
+      expect(screen.getByText('Host')).toBeTruthy();
+    });
+
+    it('shows a card with title, description and duration per event type', async () => {
+      renderApp('/book');
+
+      const card = await screen.findByRole('link', { name: /Консультация/ });
+      expect(within(card).getByText('Разбор вашей задачи')).toBeTruthy();
+      expect(within(card).getByText('60 мин')).toBeTruthy();
+      expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    });
+
+    it('opens the time selection for the clicked event type', async () => {
+      renderApp('/book');
+
+      await userEvent.click(
+        await screen.findByRole('link', { name: /Знакомство/ }),
+      );
+
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Выбор времени' }),
+      ).toBeTruthy();
+    });
+
+    it('shows an empty state when there are no event types', async () => {
+      renderApp('/book', {
+        ...catalogRoutes,
+        '/api/event-types': () => Response.json([]),
+      });
+
+      expect(
+        await screen.findByText('Нет доступных типов событий.'),
+      ).toBeTruthy();
+      expect(screen.getByText('Tota Rey')).toBeTruthy();
+      expect(screen.queryByRole('link', { name: /\d+ мин/ })).toBeNull();
+    });
+
+    it('shows an error state when the server fails', async () => {
+      renderApp('/book', {
+        ...catalogRoutes,
+        '/api/event-types': () =>
+          Response.json(
+            { statusCode: 500, error: 'Internal Server Error', message: 'x' },
+            { status: 500 },
+          ),
+      });
+
+      expect((await screen.findByRole('alert')).textContent).toContain(
+        'Не удалось загрузить',
+      );
+      expect(screen.queryByText('Tota Rey')).toBeNull();
+    });
+
+    it('shows an error state when the network fails', async () => {
+      renderApp('/book', {
+        ...catalogRoutes,
+        '/api/owner': () => Promise.reject(new TypeError('offline')),
+      });
+
+      expect(await screen.findByRole('alert')).toBeTruthy();
+    });
+
+    it('requests only the owner and the event types', async () => {
+      const fetchMock = renderApp('/book');
+      await screen.findByText('Знакомство');
+
+      expect(
+        fetchMock.mock.calls
+          .map(([request]) => new URL(request.url).pathname)
+          .sort(),
+      ).toEqual(['/api/event-types', '/api/owner']);
+    });
   });
 });
