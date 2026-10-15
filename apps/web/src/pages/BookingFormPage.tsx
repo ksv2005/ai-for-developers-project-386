@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import type { components } from 'api-client';
 import { api } from '../api';
+import { fieldOf } from '../lib/fieldErrors';
 import {
   formatDateLong,
   formatTime,
@@ -13,7 +14,6 @@ type Owner = components['schemas']['Owner'];
 type EventType = components['schemas']['EventType'];
 type Booking = components['schemas']['Booking'];
 
-type Field = 'guestName' | 'guestEmail' | 'note';
 type FieldErrors = Partial<Record<Field, string>>;
 
 type State =
@@ -51,14 +51,8 @@ function EventTypeNotFound() {
   );
 }
 
-/** Поле, на которое указывает сообщение 400 сервера («body/guestEmail must …»). */
-function fieldOf(message: string): Field | null {
-  return (
-    (['guestName', 'guestEmail', 'note'] as const).find((field) =>
-      message.includes(field),
-    ) ?? null
-  );
-}
+const FIELDS = ['guestName', 'guestEmail', 'note'] as const;
+type Field = (typeof FIELDS)[number];
 
 const FIELD_MESSAGES: Record<Field, string> = {
   guestName: 'Укажите имя',
@@ -170,7 +164,7 @@ function BookingForm({ owner, eventType, start }: BookingFormProps) {
       if (data !== undefined) {
         setBooking(data);
       } else if (response.status === 400) {
-        const field = fieldOf(error?.message ?? '');
+        const field = fieldOf(error?.message ?? '', FIELDS);
         if (field) setErrors({ [field]: FIELD_MESSAGES[field] });
         else setFormError('Проверьте введённые данные.');
       } else if (response.status === 404) {
